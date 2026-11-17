@@ -117,7 +117,7 @@ button.ghost:hover, .file-btn:hover { background: var(--surface-2); }
 .chart .baseline { stroke: var(--axis); stroke-width: 1; }
 .chart .bar { fill: var(--series-1); }
 .chart .hit { fill: transparent; cursor: default; }
-.chart .hit.clickable { cursor: pointer; }
+.chart .hit.clickable, .chart g[role="button"] { cursor: pointer; }
 .chart g.datum:hover .bar, .chart g.datum.active .bar { fill: var(--series-1-hover); }
 .chart g.datum:hover .hit { fill: var(--surface-2); fill-opacity: 0.6; }
 .chart .line { fill: none; stroke: var(--series-1); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }

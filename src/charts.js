@@ -100,13 +100,13 @@
         v.textContent = opts.total ? `${d.value} · ${pct(d.value / opts.total)}` : d.value;
 
         const tip = d.tip || `<div class="t-title">${esc(d.label)}</div><div class="t-sub">${d.value} title${d.value === 1 ? '' : 's'}${opts.total ? ' (' + pct(d.value / opts.total) + ')' : ''}</div>`;
-        hit.addEventListener('mousemove', (e) => showTip(e, tip));
-        hit.addEventListener('mouseleave', hideTip);
+        g.addEventListener('mousemove', (e) => showTip(e, tip));
+        g.addEventListener('mouseleave', hideTip);
         if (opts.onClick) {
           g.setAttribute('tabindex', '0');
           g.setAttribute('role', 'button');
           g.setAttribute('aria-label', `${d.label}: ${d.value}. Show trend.`);
-          hit.addEventListener('click', () => opts.onClick(d.label));
+          g.addEventListener('click', () => opts.onClick(d.label));
           g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); opts.onClick(d.label); } });
         }
       });
@@ -142,8 +142,8 @@
           t.textContent = d.x;
         }
         const tip = `<div class="t-title">${esc(d.x)} ${esc(opts.xUnit || '')}</div><div class="t-sub">${d.y} title${d.y === 1 ? '' : 's'}</div>`;
-        hit.addEventListener('mousemove', (e) => showTip(e, tip));
-        hit.addEventListener('mouseleave', hideTip);
+        g.addEventListener('mousemove', (e) => showTip(e, tip));
+        g.addEventListener('mouseleave', hideTip);
       });
     });
   }
