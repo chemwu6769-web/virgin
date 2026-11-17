@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Thesis Title Lab</title>
+  <meta name="description" content="Analyse chemistry dissertation titles: subfields, techniques, vocabulary, structure and trends over time.">
+  <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div>
+        <h1>Thesis Title Lab</h1>
+        <p class="sub">Analyse chemistry dissertation titles. Everything runs in your browser; nothing is uploaded.</p>
+      </div>
+      <button id="themeToggle" class="ghost" type="button" aria-label="Toggle dark mode">Theme</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="card input-card" aria-labelledby="inputHeading">
+      <h2 id="inputHeading">Titles</h2>
+      <p class="hint">
+        Paste one title per line (optionally <code>2019, Title</code> or <code>Title&#9;2019</code>), or load a CSV/TSV
+        with a <code>title</code> column and an optional <code>year</code> column.
+      </p>
+      <textarea id="input" rows="8" spellcheck="false"
+        placeholder="Enantioselective Organocatalytic Approaches to Alkaloid Natural Products, 2014&#10;Metal-Organic Frameworks for Carbon Capture, 2020"></textarea>
+      <div class="row">
+        <button id="analyseBtn" class="primary" type="button">Analyse</button>
+        <label class="ghost file-btn">Load file…<input id="fileInput" type="file" accept=".csv,.tsv,.txt,text/csv,text/plain"></label>
+        <button id="sampleBtn" class="ghost" type="button">Load sample data</button>
+        <button id="clearBtn" class="ghost" type="button">Clear</button>
+        <label class="check"><input id="fillerToggle" type="checkbox" checked> Ignore filler words (“study”, “novel”, “towards”…)</label>
+      </div>
+      <p id="status" class="status" role="status"></p>
+    </section>
+
+    <div id="results" hidden>
+      <section class="tiles" id="tiles" aria-label="Summary"></section>
+
+      <div class="grid">
+        <section class="card">
+          <h2>Subfields</h2>
+          <p class="hint">Keyword-based; a title can belong to several. <span id="unclassifiedNote"></span></p>
+          <div id="subfieldChart" class="chart"></div>
+        </section>
+
+        <section class="card">
+          <h2>Techniques mentioned</h2>
+          <p class="hint">Instrumental and computational methods named in titles.</p>
+          <div id="techniqueChart" class="chart"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <h2>Most common terms</h2>
+            <div class="seg" role="tablist" aria-label="Term type">
+              <button type="button" role="tab" data-terms="terms" aria-selected="true">Words</button>
+              <button type="button" role="tab" data-terms="bigrams" aria-selected="false">Phrases</button>
+            </div>
+          </div>
+          <p class="hint">Number of titles containing each term. Click a bar to see its trend.</p>
+          <div id="termChart" class="chart"></div>
+        </section>
+
+        <section class="card">
+          <h2>Title length</h2>
+          <p class="hint">Number of titles by word count.</p>
+          <div id="lengthChart" class="chart"></div>
+          <h3>Common openings</h3>
+          <div id="openings" class="chips"></div>
+        </section>
+
+        <section class="card span-2">
+          <div class="card-head">
+            <h2>Trend over time</h2>
+            <div class="row tight">
+              <label class="sr-only" for="trendSelect">Measure</label>
+              <select id="trendSelect"></select>
+              <label class="sr-only" for="trendKeyword">Keyword</label>
+              <input id="trendKeyword" type="search" placeholder="…or type a keyword, e.g. perovskite">
+              <label class="sr-only" for="trendBin">Group years</label>
+              <select id="trendBin">
+                <option value="1">Each year</option>
+                <option value="3">3-year groups</option>
+                <option value="5">5-year groups</option>
+              </select>
+            </div>
+          </div>
+          <p class="hint" id="trendHint">Share of each year’s titles that match.</p>
+          <div id="trendChart" class="chart"></div>
+        </section>
+
+        <section class="card span-2">
+          <div class="card-head">
+            <h2>All titles</h2>
+            <div class="row tight">
+              <label class="sr-only" for="tableSearch">Filter titles</label>
+              <input id="tableSearch" type="search" placeholder="Filter titles…">
+              <select id="tableSubfield" aria-label="Filter by subfield"><option value="">All subfields</option></select>
+              <button id="exportBtn" class="ghost" type="button">Export CSV</button>
+            </div>
+          </div>
+          <p class="hint" id="tableCount"></p>
+          <div class="table-wrap">
+            <table id="titleTable">
+              <thead><tr>
+                <th data-sort="title">Title</th>
+                <th data-sort="year" class="num">Year</th>
+                <th data-sort="words" class="num">Words</th>
+                <th>Subfields &amp; techniques</th>
+              </tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+
+  <script src="src/analysis.js"></script>
+  <script src="src/sample-data.js"></script>
+  <script src="src/charts.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>
