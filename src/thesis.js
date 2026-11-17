@@ -1,4 +1,4 @@
-/* Single-thesis view: read a thesis link via the local helper (server.py), or analyse pasted text. */
+/* Thesis reader: read a thesis link via the local helper (server.py), or analyse pasted text. */
 (function () {
   'use strict';
   const A = window.TitleAnalysis;
@@ -7,24 +7,6 @@
   const esc = C.esc;
   let current = null; // { meta, analysis }
   let helperOk = null;
-
-  const store = {
-    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
-    set(k, v) { try { localStorage.setItem(k, v); } catch { /* ignore */ } },
-  };
-
-  // ------------------------------------------------------------------ tabs
-  const tabs = { one: [$('tab-one'), $('panel-one')], many: [$('tab-many'), $('panel-many')] };
-  function showTab(name) {
-    for (const [k, [tab, panel]] of Object.entries(tabs)) {
-      tab.setAttribute('aria-selected', String(k === name));
-      panel.hidden = k !== name;
-    }
-    store.set('thesis-title-lab:tab', name);
-  }
-  tabs.one[0].addEventListener('click', () => showTab('one'));
-  tabs.many[0].addEventListener('click', () => showTab('many'));
-  showTab(store.get('thesis-title-lab:tab') === 'many' ? 'many' : 'one');
 
   // ------------------------------------------------------------------ helper detection
   const HELPER_MSG =
@@ -149,6 +131,19 @@
       st.hasFormula ? 'Contains a formula' : null, st.hasAcronym ? 'Contains an acronym' : null,
     ].filter(Boolean).map((f) => `<span class="chip">${esc(f)}</span>`).join('') : '';
 
+    // elements: shown here and lit up on the cover table
+    const elements = window.Elements.findElements([meta.title, meta.abstract, (meta.keywords || []).join('; ')].join('. '));
+    $('tElements').innerHTML = elements.length
+      ? elements.map((x) => {
+        const el = window.Elements.BY_SYMBOL[x.symbol];
+        return `<button type="button" class="chip el-chip" data-sym="${x.symbol}" title="${esc(x.forms.join(', '))}">` +
+          `<b>${x.symbol}</b> ${esc(el.name)}${x.count > 1 ? ` ×${x.count}` : ''}</button>`;
+      }).join('')
+      : '<span class="hint">No elements named in the title, abstract or keywords.</span>';
+    $('tElements').querySelectorAll('[data-sym]').forEach((b) =>
+      b.addEventListener('click', () => window.PeriodicTable.show(b.dataset.sym)));
+    document.dispatchEvent(new CustomEvent('thesis:analysed', { detail: { elements, title: meta.title } }));
+
     // abstract
     $('tSummary').textContent = analysis.summary || 'No abstract available.';
     $('tAbstractMeta').textContent = meta.abstract ? `Summary: the abstract's opening sentences. ${analysis.abstractWords} words in total.` : '';
@@ -182,23 +177,6 @@
   }
 
   // ------------------------------------------------------------------ actions
-  $('addToListBtn').addEventListener('click', () => {
-    if (!current || !current.meta.title) return;
-    const { title, year } = current.meta;
-    const ta = $('input');
-    const firstLine = (ta.value.split(/\r?\n/).find((l) => l.trim()) || '').toLowerCase();
-    let line;
-    if (/(^|,|\t)\s*"?title"?\s*(,|\t|$)/.test(firstLine)) {
-      line = `"${title.replace(/"/g, '""')}"${firstLine.includes('year') ? ',' + (year || '') : ''}`;
-    } else {
-      line = year ? `${year}, ${title}` : title;
-    }
-    ta.value = ta.value.replace(/\s*$/, '') + (ta.value.trim() ? '\n' : '') + line + '\n';
-    $('analyseBtn').click();
-    showTab('many');
-    $('status').textContent += ' Added “' + title + '”.';
-  });
-
   $('copyBtn').addEventListener('click', async () => {
     if (!current) return;
     const { meta, analysis } = current;
@@ -208,6 +186,7 @@
       'Main subfield: ' + (analysis.primary || 'unclassified'),
       'Other subfields: ' + analysis.subfields.slice(1).map((s) => s.label).join(', '),
       'Methods: ' + analysis.techniques.map((t) => t.label).join(', '),
+      'Elements: ' + window.Elements.findElements([meta.title, meta.abstract].join('. ')).map((x) => x.symbol).join(', '),
       'Keywords: ' + suggestedKeywords(meta, analysis).join('; '),
       '', 'Summary: ' + analysis.summary,
     ].join('\n');
