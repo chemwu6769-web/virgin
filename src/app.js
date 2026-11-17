@@ -249,8 +249,19 @@
     renderTable();
   }));
 
-  $('exportBtn').addEventListener('click', () => {
-    const blob = new Blob([A.toCSV(state.result.records)], { type: 'text/csv' });
+  $('exportBtn').addEventListener('click', async () => {
+    const csv = A.toCSV(state.result.records);
+    // Embedded/sandboxed pages can't start downloads, so copy to the clipboard there instead.
+    if (window.top !== window.self) {
+      try {
+        await navigator.clipboard.writeText(csv);
+        setStatus(`Copied ${state.result.records.length} rows of CSV to the clipboard. Paste into a spreadsheet.`);
+      } catch {
+        setStatus('Could not copy to the clipboard here. Open the app from index.html to download the CSV.');
+      }
+      return;
+    }
+    const blob = new Blob([csv], { type: 'text/csv' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = 'thesis-titles-analysed.csv';
@@ -263,4 +274,9 @@
   // ---------------------------------------------------------------- boot
   const saved = store.get(STORE_KEY);
   if (saved) { $('input').value = saved; run(); }
+  else {
+    // First visit: show the tool working on the synthetic sample.
+    $('input').value = window.SAMPLE_CSV; run();
+    setStatus($('status').textContent + ' This is synthetic sample data. Replace it with your own titles and press Analyse.');
+  }
 })();

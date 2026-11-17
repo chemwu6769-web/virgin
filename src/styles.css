@@ -53,7 +53,7 @@
 
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--page); color: var(--ink); line-height: 1.45; }
-.wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 h1 { font-size: 1.35rem; margin: 0; letter-spacing: -0.01em; }
 h2 { font-size: 1rem; margin: 0 0 4px; }
 h3 { font-size: 0.85rem; margin: 18px 0 8px; color: var(--ink-2); font-weight: 600; }
