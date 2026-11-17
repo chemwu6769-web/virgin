@@ -24,7 +24,8 @@
       'transition[- ]metal', 'coordination', 'ligand', 'complexes', 'lanthanide', 'actinide',
       'organometallic', 'main[- ]group', 'bioinorganic', 'ruthenium', 'iridium', 'rhodium',
       'platinum', 'palladium', 'gold\\(', 'copper', 'iron', 'cobalt', 'nickel', 'manganese',
-      'uranium', 'frustrated lewis', 'boron', 'metal complex', 'clusters?\\b',
+      'uranium', 'zirconium', 'titanium', 'vanadium', 'chromium', 'zinc', 'silver', 'molybdenum',
+      'tungsten', 'osmium', 'frustrated lewis', 'boron', 'metal complex', 'clusters?\\b',
     ],
     'Physical chemistry': [
       'spectroscop', 'kinetic', 'ultrafast', 'photophysic', 'thermodynamic', 'surface science',
@@ -356,8 +357,117 @@
     return [head.join(','), ...lines].join('\n');
   }
 
+  // ---------------------------------------------------------------- single-thesis analysis
+  /** For each category, the distinct terms in `text` that triggered it, most frequent first. */
+  function explainMatches(text, compiled) {
+    const lower = normalise(text).toLowerCase();
+    const out = [];
+    for (const [label, re] of Object.entries(compiled)) {
+      const g = new RegExp(re.source, 'gi');
+      const hits = new Map();
+      for (const m of lower.matchAll(g)) {
+        // widen the match to the whole word(s) it sits in, e.g. "nanopartic" -> "nanoparticles"
+        const s = lower.lastIndexOf(' ', m.index) + 1;
+        let e = lower.indexOf(' ', m.index + m[0].length);
+        if (e === -1) e = lower.length;
+        const term = lower.slice(s, e).replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, '');
+        if (term) hits.set(term, (hits.get(term) || 0) + 1);
+      }
+      if (hits.size) {
+        const terms = sortedEntries(hits).map(([t, c]) => ({ term: t, count: c }));
+        out.push({ label, score: terms.reduce((a, t) => a + t.count, 0), terms });
+      }
+    }
+    return out.sort((a, b) => b.score - a.score);
+  }
+
+  // Extra stopwords for running prose (abstracts), on top of STOPWORDS.
+  const PROSE_STOP = new Set((
+    'we our us i my here herein this these those it its they them their there been being also however thus ' +
+    'therefore hence which who whom whose what when where while whereas both each either all any most more ' +
+    'less much many several such only very well further first second third one two three four five six ' +
+    'show shows shown showed demonstrate demonstrates demonstrated found find report reports reported ' +
+    'present presents presented describe describes described discuss discussed investigate investigated ' +
+    'obtained obtain observed observe used uses employ employed allow allows allowed provide provides provided ' +
+    'leading lead leads result results resulting resulted due order whether will would could should may might ' +
+    'can cannot must has have had having do does did done make made making give gives given high highly low ' +
+    'new novel different various important significant significantly potential possible key main large small ' +
+    'work chapter chapters thesis dissertation project part approach approaches method methods study studies ' +
+    'investigation research et al e g ie eg via within without upon across along after before during against ' +
+    'about above below then than so if into onto out up down off over under again once same other another ' +
+    'own because as until per towards toward based including include includes particular particularly ' +
+    'respectively finally overall addition additionally furthermore moreover generally typically'
+  ).split(' '));
+
+  /**
+   * RAKE-style key phrase extraction: candidate phrases are runs of content
+   * words between stopwords/punctuation; word score = degree / frequency;
+   * phrase score = sum of word scores, boosted by repetition.
+   */
+  function keyPhrases(text, { limit = 15, maxWords = 4 } = {}) {
+    const isStop = (w) => STOPWORDS.has(w) || PROSE_STOP.has(w) || /^\d+(\.\d+)?$/.test(w) || w.length < 2;
+    const phrases = [];
+    const prepped = normalise(text).toLowerCase().replace(/\b(in|ex) (situ|vivo|vitro|silico|operando)\b/g, '$1-$2');
+    for (const chunk of prepped.split(/[.,;:!?()[\]{}"“”‘’–—]|\s-\s|\s'|'\s/)) {
+      let cur = [];
+      for (const w of chunk.match(/[a-z0-9À-ɏ]+(?:[-'][a-z0-9À-ɏ]+)*/g) || []) {
+        if (isStop(w)) { if (cur.length) phrases.push(cur); cur = []; }
+        else cur.push(w);
+      }
+      if (cur.length) phrases.push(cur);
+    }
+    const cands = phrases.filter((p) => p.length <= maxWords);
+    const freq = new Map(), deg = new Map();
+    for (const p of cands) for (const w of p) {
+      freq.set(w, (freq.get(w) || 0) + 1);
+      deg.set(w, (deg.get(w) || 0) + p.length);
+    }
+    const score = new Map(), count = new Map();
+    for (const p of cands) {
+      const key = p.join(' ');
+      count.set(key, (count.get(key) || 0) + 1);
+      score.set(key, p.reduce((a, w) => a + deg.get(w) / freq.get(w), 0));
+    }
+    return [...score.entries()]
+      .map(([phrase, s]) => ({ phrase, count: count.get(phrase), score: s * (1 + Math.log(count.get(phrase))) }))
+      // single generic words are weak keywords unless repeated
+      .filter((p) => p.phrase.includes(' ') || p.count > 1 || p.phrase.length > 7)
+      .sort((a, b) => b.score - a.score || b.count - a.count)
+      .slice(0, limit);
+  }
+
+  /** Simple first-sentence summary of an abstract. */
+  function firstSentences(text, n = 2) {
+    const sents = normalise(text).match(/[^.!?]+[.!?]+(?=\s|$)/g) || [normalise(text)];
+    return sents.slice(0, n).map((x) => x.trim()).join(' ');
+  }
+
+  /**
+   * Analyse one thesis record as returned by the local server (or pasted by hand).
+   * @param {{title?:string, abstract?:string, keywords?:string[], subjects?:string[]}} meta
+   */
+  function analyseThesis(meta) {
+    const title = meta.title || '';
+    const abstract = meta.abstract || '';
+    const authorKw = [...(meta.keywords || []), ...(meta.subjects || [])].join('. ');
+    const all = [title, title, abstract, authorKw].join('. '); // title counts double
+    const subfields = explainMatches(all, SUBFIELD_RE);
+    const tech = explainMatches(all, TECHNIQUE_RE);
+    const total = subfields.reduce((a, s) => a + s.score, 0) || 1;
+    return {
+      subfields: subfields.map((s) => ({ ...s, share: s.score / total })),
+      primary: subfields[0] ? subfields[0].label : null,
+      techniques: tech,
+      keyPhrases: keyPhrases([title, abstract].join('. ')),
+      summary: abstract ? firstSentences(abstract, 2) : '',
+      structure: title ? structure(title) : null,
+      abstractWords: tokenize(abstract).length,
+    };
+  }
+
   return {
-    SUBFIELDS, TECHNIQUES,
+    SUBFIELDS, TECHNIQUES, explainMatches, keyPhrases, analyseThesis, firstSentences,
+    SUBFIELD_RE, TECHNIQUE_RE,
     normalise, tokenize, contentTokens, classify, techniques, structure, openingPhrase,
     parseInput, parseDelimited, analyse, trendByYear, keywordPredicate, toCSV, median,
   };

@@ -97,7 +97,7 @@
         const w = max ? (d.value / max) * plotW : 0;
         el('path', { class: 'bar', d: hbarPath(labelW, y + gap, w, barH, 4) }, g);
         const v = el('text', { class: 'value', x: labelW + w + 6, y: y + rowH / 2 + 4 }, g);
-        v.textContent = opts.total ? `${d.value} · ${pct(d.value / opts.total)}` : d.value;
+        v.textContent = opts.format ? opts.format(d.value) : opts.total ? `${d.value} · ${pct(d.value / opts.total)}` : d.value;
 
         const tip = d.tip || `<div class="t-title">${esc(d.label)}</div><div class="t-sub">${d.value} title${d.value === 1 ? '' : 's'}${opts.total ? ' (' + pct(d.value / opts.total) + ')' : ''}</div>`;
         g.addEventListener('mousemove', (e) => showTip(e, tip));

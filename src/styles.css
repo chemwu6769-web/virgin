@@ -150,3 +150,32 @@ mark { background: var(--accent-wash); color: inherit; border-radius: 2px; }
 }
 .tooltip .t-title { font-weight: 600; margin-bottom: 2px; }
 .tooltip .t-sub { color: var(--ink-2); }
+
+/* ---- tabs & single-thesis view ---- */
+.tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+.tabs button { border: 0; border-radius: 0; background: transparent; color: var(--ink-2); padding: 10px 14px; border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--series-1); font-weight: 650; }
+.tabs button:hover { background: transparent; color: var(--ink); }
+.url-row input { flex: 1 1 320px; min-width: 0; font: inherit; color: var(--ink); background: var(--page); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
+.notice { font-size: 0.875rem; background: var(--surface-2); border-radius: 8px; padding: 10px 12px; margin: 12px 0 0; color: var(--ink); }
+.notice code { background: var(--surface); }
+details > summary { cursor: pointer; color: var(--ink-2); font-size: 0.875rem; margin-top: 12px; }
+.manual { display: grid; gap: 6px; margin-top: 10px; }
+.manual label { font-size: 0.8rem; color: var(--ink-2); margin-top: 6px; }
+.manual input { font: inherit; color: var(--ink); background: var(--page); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
+.manual textarea { font-family: inherit; font-size: 0.9rem; }
+.thesis-head { margin-bottom: 20px; }
+.eyebrow { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+.thesis-title { font-size: 1.3rem; line-height: 1.3; text-wrap: balance; margin: 0 0 6px; }
+.byline { color: var(--ink-2); margin: 0 0 10px; font-size: 0.9rem; }
+.links a { font-size: 0.85rem; color: var(--series-1); text-decoration: none; border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px; }
+.links a:hover { background: var(--surface-2); }
+.term-list { margin-top: 12px; display: grid; gap: 6px; font-size: 0.82rem; color: var(--ink-2); }
+.term-list b { color: var(--ink); font-weight: 600; }
+.kw-block + .kw-block { margin-top: 14px; }
+.kw-block h3 { margin-top: 0; }
+.chip.kw { background: var(--accent-wash); color: var(--ink); }
+.lede { font-size: 1rem; max-width: 70ch; }
+.abstract { max-width: 75ch; color: var(--ink); font-size: 0.92rem; }
+.source-note { font-size: 0.75rem; color: var(--muted); margin: 12px 0 0; }
+.primary-pill { justify-self: start; display: inline-block; font-size: 0.8rem; font-weight: 600; background: var(--series-1); color: #fff; border-radius: 999px; padding: 2px 10px; margin-bottom: 10px; }

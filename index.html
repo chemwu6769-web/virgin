@@ -12,13 +12,96 @@
     <div class="wrap topbar-inner">
       <div>
         <h1>Thesis Title Lab</h1>
-        <p class="sub">Analyse chemistry dissertation titles. Everything runs in your browser; nothing is uploaded.</p>
+        <p class="sub">Pull out the keywords and topic of a chemistry thesis, or analyse a whole list of titles.</p>
       </div>
       <button id="themeToggle" class="ghost" type="button" aria-label="Toggle dark mode">Theme</button>
     </div>
   </header>
 
   <main class="wrap">
+    <nav class="tabs" role="tablist" aria-label="Mode">
+      <button type="button" role="tab" id="tab-one" aria-controls="panel-one" aria-selected="true">One thesis</button>
+      <button type="button" role="tab" id="tab-many" aria-controls="panel-many" aria-selected="false">Many titles</button>
+    </nav>
+
+    <div id="panel-one" role="tabpanel" aria-labelledby="tab-one">
+      <section class="card input-card" aria-labelledby="oneHeading">
+        <h2 id="oneHeading">Thesis link</h2>
+        <p class="hint">Paste the link to a thesis page in a university repository, or its DOI. Link the page that describes the thesis, not the PDF itself.</p>
+        <form id="thesisForm" class="row url-row">
+          <label class="sr-only" for="thesisUrl">Thesis link or DOI</label>
+          <input id="thesisUrl" type="url" inputmode="url" autocomplete="off" spellcheck="false"
+            placeholder="https://repository.example.ac.uk/handle/1234/5678   or   10.1234/abcd">
+          <button id="thesisBtn" class="primary" type="submit">Read thesis</button>
+        </form>
+        <p id="helperNote" class="notice" hidden></p>
+        <p id="thesisStatus" class="status" role="status"></p>
+        <details id="manualBox">
+          <summary>Or paste the title and abstract yourself</summary>
+          <div class="manual">
+            <label for="manTitle">Title</label>
+            <input id="manTitle" type="text" autocomplete="off">
+            <label for="manAbstract">Abstract</label>
+            <textarea id="manAbstract" rows="6"></textarea>
+            <label for="manKeywords">Keywords (optional, separated by commas)</label>
+            <input id="manKeywords" type="text" autocomplete="off">
+            <div><button id="manBtn" class="primary" type="button">Analyse</button></div>
+          </div>
+        </details>
+      </section>
+
+      <div id="thesisResult" hidden>
+        <section class="card thesis-head">
+          <p class="eyebrow" id="tType"></p>
+          <h2 class="thesis-title" id="tTitle"></h2>
+          <p class="byline" id="tByline"></p>
+          <div class="row tight links" id="tLinks"></div>
+        </section>
+
+        <div class="grid">
+          <section class="card">
+            <h2>Topic</h2>
+            <p class="hint">Chemistry subfields matched in the title, abstract and keywords. Bars show each one's share of the matches.</p>
+            <div id="tSubfieldChart" class="chart"></div>
+            <div id="tSubfieldTerms" class="term-list"></div>
+          </section>
+
+          <section class="card">
+            <h2>Keywords</h2>
+            <div id="tKeywordBlocks"></div>
+          </section>
+
+          <section class="card">
+            <h2>Key phrases from the abstract</h2>
+            <p class="hint">Phrases that stand out in the text, found automatically. Higher is more distinctive.</p>
+            <div id="tPhraseChart" class="chart"></div>
+          </section>
+
+          <section class="card">
+            <h2>Methods mentioned</h2>
+            <div id="tTechniques"></div>
+            <h3>Title</h3>
+            <div id="tTitleFacts" class="chips"></div>
+          </section>
+
+          <section class="card span-2">
+            <div class="card-head">
+              <h2>Abstract</h2>
+              <div class="row tight">
+                <button id="addToListBtn" class="ghost" type="button">Add to my title list</button>
+                <button id="copyBtn" class="ghost" type="button">Copy summary</button>
+              </div>
+            </div>
+            <p class="hint" id="tAbstractMeta"></p>
+            <p class="lede" id="tSummary"></p>
+            <details id="tAbstractBox"><summary>Full abstract (key phrases highlighted)</summary><p id="tAbstract" class="abstract"></p></details>
+            <p class="source-note" id="tSource"></p>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-many" role="tabpanel" aria-labelledby="tab-many" hidden>
     <section class="card input-card" aria-labelledby="inputHeading">
       <h2 id="inputHeading">Titles</h2>
       <p class="hint">
@@ -118,6 +201,7 @@
         </section>
       </div>
     </div>
+    </div>
   </main>
 
   <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
@@ -126,5 +210,6 @@
   <script src="src/sample-data.js"></script>
   <script src="src/charts.js"></script>
   <script src="src/app.js"></script>
+  <script src="src/thesis.js"></script>
 </body>
 </html>

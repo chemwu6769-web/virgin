@@ -84,3 +84,30 @@ test('trendByYear groups years into bins', () => {
   const pts = A.trendByYear(recs, A.keywordPredicate('nmr'), 3);
   assert.deepEqual(pts.map((p) => [p.year, p.yearEnd, p.hits, p.total]), [[2010, 2012, 2, 3], [2013, 2013, 1, 1]]);
 });
+
+test('keyPhrases finds multi-word phrases and keeps "in situ" together', () => {
+  const abs = 'We report zirconium MOFs for carbon capture. In situ infrared spectroscopy shows CO2 binding. Carbon capture performance was screened.';
+  const phrases = A.keyPhrases(abs).map((p) => p.phrase);
+  assert.ok(phrases.includes('in-situ infrared spectroscopy'));
+  assert.ok(phrases.includes('carbon capture'));
+  assert.ok(!phrases.some((p) => /\b(we|was|shows)\b/.test(p)));
+});
+
+test('analyseThesis picks a main subfield and explains it', () => {
+  const r = A.analyseThesis({
+    title: 'Enantioselective Nickel Catalysis for C–N Bond Formation',
+    abstract: 'Chiral ligands enable asymmetric amination under photoredox conditions. EPR spectroscopy supports a radical mechanism.',
+    keywords: ['asymmetric catalysis'],
+  });
+  assert.equal(r.primary, 'Organic synthesis');
+  assert.ok(r.subfields[0].terms.some((t) => t.term === 'enantioselective'));
+  assert.ok(r.techniques.some((t) => t.label === 'EPR'));
+  assert.ok(Math.abs(r.subfields.reduce((a, s) => a + s.share, 0) - 1) < 1e-9);
+  assert.match(r.summary, /^Chiral ligands/);
+});
+
+test('analyseThesis copes with a title only', () => {
+  const r = A.analyseThesis({ title: 'Perovskite Solar Cells' });
+  assert.equal(r.summary, '');
+  assert.ok(r.subfields.length > 0);
+});

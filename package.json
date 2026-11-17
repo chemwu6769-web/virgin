@@ -1,10 +1,10 @@
 {
   "name": "thesis-title-lab",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Analyse chemistry dissertation titles in the browser.",
   "scripts": {
-    "test": "node --test test/*.test.js",
-    "start": "python3 -m http.server 8000"
+    "test": "node --test test/*.test.js && python3 -m unittest discover -s test -p 'test_*.py'",
+    "start": "python3 server.py"
   }
 }
